@@ -1,1 +1,1 @@
-# Proyecto-dise-o-y-construccion-de-software
+# Proyecto-diseño-y-construccion-de-software
