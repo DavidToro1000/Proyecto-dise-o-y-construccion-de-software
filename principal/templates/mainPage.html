@@ -3,17 +3,192 @@
 
 <div class="header-bar">
     <div>
-        <h1>Hello {{ request.user|title}}</h1>
-        <h3 style="margin: 0;">Welcome to the street lights managment system</h3>
+        <h1>Hola {{ request.user|title}}</h1>
+        <h3 style="margin: 0;">Bienvenido al sistema de administración de luces de calle</h3>
     </div>
 
     {% if request.user.is_authenticated %}
-    <a href="{% url 'logout' %}">Logout</a>
+    <a href="{% url 'logout' %}">Cerrar sesión</a>
     {% else %}
-    <a href="{% url 'login'  %}">Login</a>
+    <a href="{% url 'login'  %}">Iniciar sesión	</a>
 {% endif %}
 
 
 </div>
+<body>
+    <!-- Título de la página -->
+    <h1>Opciones</h1>
+    <!-- Botón para revisar el sensor de proximidad -->
+    <button id="revisar-sensor-proximidad">Revisar sensor de proximidad</button>
+    <!-- Botón para predecir el clima -->
+    <button id="predecir-clima">Predicción de clima</button>
+    <!-- Botón para asignar el estado del sensor de voltaje -->
+    <button id="asignar-estado-sensor-voltaje">Sensores de voltaje</button>
 
+    <!-- Div para el popup, inicialmente oculto -->
+    <div id="popup" style="display: none;">
+        <!-- Párrafo para el texto del popup -->
+        <p id="popup-text"></p>
+        <!-- Botón para aceptar la acción recomendada -->
+        <button id="aceptar-accion">Aceptar acción recomendada</button>
+        <!-- Botón para cancelar -->
+        <button id="cancelar">Cancelar</button>
+    </div>
+
+    <!-- Div para la alerta, inicialmente oculta -->
+    <div id="alerta" style="display: none;">
+        <!-- Párrafo para el mensaje de la alerta -->
+        <p id="mensaje"></p>
+        <!-- Div para el botón de notificar, alineado al centro -->
+        <div style="display: flex; justify-content: center;">
+            <!-- Botón para notificar, inicialmente oculto -->
+            <button id="notificar" style="display: none;">Notificar</button>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener el valor de una cookie
+        function getCookie(name) {
+            // Inicializamos el valor de la cookie a null
+            let cookieValue = null;
+            // Si hay cookies
+            if (document.cookie && document.cookie !== '') {
+                // Dividimos las cookies en un array
+                const cookies = document.cookie.split(';');
+                // Para cada cookie
+                for (let i = 0; i < cookies.length; i++) {
+                    // Quitamos los espacios en blanco al principio y al final
+                    const cookie = cookies[i].trim();
+                    // Si el nombre de la cookie coincide con el nombre que estamos buscando
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        // Decodificamos el valor de la cookie y lo guardamos
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        // Salimos del bucle
+                        break;
+                    }
+                }
+            }
+            // Devolvemos el valor de la cookie
+            return cookieValue;
+        }
+
+        // Añadimos un controlador de eventos de clic al botón para revisar el sensor de proximidad
+        document.getElementById('revisar-sensor-proximidad').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/revisar_sensor_proximidad/'
+            fetch('/revisar_sensor_proximidad/', {method: 'POST'})
+                // Convertimos la respuesta a JSON
+                .then(response => response.json())
+                .then(data => {
+                    // Si hay sectores en los que se detectó un peatón o vehículo de emergencia
+                    if (data.sectores.length > 0) {
+                        // Mostramos un mensaje en el popup y preguntamos si se desea realizar la acción recomendada
+                        document.getElementById('popup-text').textContent = 'Se detectó peatón o vehículo de emergencia en los sectores ' + data.sectores.join(', ') + '. ¿Desea realizar la acción recomendada?';
+                    } else {
+                        // Si no se detectó ningún peatón o vehículo de emergencia, mostramos un mensaje en el popup
+                        document.getElementById('popup-text').textContent = 'No se detectó ningún peatón o vehículo de emergencia.';
+                    }
+                    // Mostramos el popup
+                    document.getElementById('popup').style.display = 'block';
+                });
+        });
+
+    // Añadimos un controlador de eventos de clic al botón para predecir el clima
+        document.getElementById('predecir-clima').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/predecir_clima/'
+            fetch('/predecir_clima/', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    // Mostramos un mensaje en el popup con la predicción del clima y preguntamos si se desea realizar la acción recomendada
+                    document.getElementById('popup-text').textContent = 'Se predice ' + data.clima + ' en el sector ' + data.sector + ' en los próximos 30 minutos. ¿Desea realizar la acción recomendada?';
+                    // Mostramos el popup
+                    document.getElementById('popup').style.display = 'block';
+                });
+        });
+
+        // Añadimos un controlador de eventos de clic al botón para aceptar la acción recomendada
+        document.getElementById('aceptar-accion').addEventListener('click', function() {
+            // Obtenemos el texto del popup
+            var popupText = document.getElementById('popup-text').textContent;
+            // Si el texto del popup empieza con 'Se detectó', es que se detectó un peatón o vehículo de emergencia
+            if (popupText.startsWith('Se detectó')) {
+                // Hacemos una petición POST a la URL '/aceptar_accion_recomendada/'
+                fetch('/aceptar_accion_recomendada/', {method: 'POST'})
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostramos un mensaje con la respuesta del servidor
+                        alert(data.message);
+                        // Ocultamos el popup
+                        document.getElementById('popup').style.display = 'none';
+                    });
+            // Si el texto del popup empieza con 'Se predice', es que se predijo un clima
+            } else if (popupText.startsWith('Se predice')) {
+                // Obtenemos el clima y el sector del texto del popup
+                var clima = popupText.split(' ')[2];
+                var sector = popupText.split(' ')[6];
+                // Hacemos una petición POST a la URL '/aceptar_accion_recomendada_clima/' con el clima y el sector como parámetros
+                fetch('/aceptar_accion_recomendada_clima/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'clima=' + encodeURIComponent(clima) + '&sector=' + encodeURIComponent(sector)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostramos un mensaje con la respuesta del servidor
+                        alert(data.message);
+                        // Ocultamos el popup
+                        document.getElementById('popup').style.display = 'none';
+                    });
+            }
+        });
+
+            // Añadimos un controlador de eventos de clic al botón para asignar el estado del sensor de voltaje
+        document.getElementById('asignar-estado-sensor-voltaje').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/asignar_estado_sensor_voltaje/'
+            fetch('/asignar_estado_sensor_voltaje/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken') // Usamos la función getCookie para obtener el token CSRF
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Obtenemos los elementos de la alerta, el mensaje y el botón de notificar
+                const alerta = document.getElementById('alerta');
+                const mensaje = document.getElementById('mensaje');
+                const notificar = document.getElementById('notificar');
+                // Mostramos el mensaje de la respuesta del servidor
+                mensaje.textContent = data.message;
+                // Si la respuesta del servidor indica una alerta, mostramos el botón de notificar
+                if (data.alert) {
+                    notificar.style.display = 'block';
+                } else {
+                    // Si no hay alerta, ocultamos el botón de notificar
+                    notificar.style.display = 'none';
+                }
+                // Mostramos la alerta
+                alerta.style.display = 'block';
+            });
+        });
+
+        // Añadimos un controlador de eventos de clic al botón de notificar
+        document.getElementById('notificar').addEventListener('click', function() {
+            // Mostramos un mensaje de notificación exitosa
+            alert('Notificación Exitosa');
+            // Redirigimos al usuario a la página principal
+            window.location.href = '/'; 
+        });
+
+        // Añadimos un controlador de eventos de clic al botón de cancelar
+        document.getElementById('cancelar').addEventListener('click', function() {
+            // Redirigimos al usuario a la página principal
+            window.location.href = '/'; 
+        });
+    </script>
+
+    
+
+</body>
 {% endblock content %}
