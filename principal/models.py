@@ -83,3 +83,29 @@ class DispositivoIluminacion(models.Model):
     def __str__(self):
         # Devuelve una cadena que contiene el id del dispositivo, el sector al que pertenece y su luminosidad
         return f"{self.id} - {self.sector} - {self.luminosidad}"
+    
+# Definimos la clase Sistema de tráfico, que es un sistema externo que solo envía notificaciones al sistema principal
+class SistemaTrafico(models.Model):
+    # El contacto del sistema de tráfico
+    contacto = models.CharField(max_length=50, primary_key=True)
+
+    #Funcion de notificacion
+    def notificarCruce(self, sectores):
+        return f"En este momento hay un vehiculo de emergencia pasando por cruces en los sectores: {', '.join(sectores)}"
+    
+    # Método para convertir un objeto SistemaTrafico a string
+    def __str__(self):
+        return self.contacto
+    
+# Definimos la clase Proveedor de servicios de emergencia, que es un sistema externo que solo envía notificaciones al sistema principal    
+class ProveedorServiciosDeEmergencia(models.Model):
+    # El contacto del sistema de tráfico
+    contacto = models.CharField(max_length=50, primary_key=True)
+
+    #Funcion de notificacion
+    def notificarVehiculo(self, sectores):
+        return f"En este momento hay un vehiculo de emergencia realizando una ruta que afecta los sectores: {', '.join(sectores)}"
+    
+    # Método para convertir un objeto Sector a string
+    def __str__(self):
+        return self.contacto

@@ -24,6 +24,10 @@
     <button id="predecir-clima">Predicción de clima</button>
     <!-- Botón para asignar el estado del sensor de voltaje -->
     <button id="asignar-estado-sensor-voltaje">Sensores de voltaje</button>
+    <!-- Botón para revisar notificaciones sistema de trafico -->
+    <button id="revisar-notificacion-trafico">Notificaciones sistema de tráfico</button>
+    <!-- Botón para revisar notificaciones proveedor servicios de emergencia -->
+    <button id="revisar-notificacion-emergencia">Notificaciones del proveedor de servicios de emergencia</button>
 
     <!-- Div para el popup, inicialmente oculto -->
     <div id="popup" style="display: none;">
@@ -33,6 +37,19 @@
         <button id="aceptar-accion">Aceptar acción recomendada</button>
         <!-- Botón para cancelar -->
         <button id="cancelar">Cancelar</button>
+    </div>
+
+     <!-- Div para el popup del caso de uso 4 y 8, inicialmente oculto -->
+     <div id="popup-trafico" style="display: none;">
+        <!-- Párrafo para el texto del popup -->
+        <p id="popup-text-trafico"></p>
+        <!-- Div para el botón de Ajustar lucees, alineado al centro -->
+        <div style="display: flex; justify-content: center;">
+            <button id="aceptar-accion-trafico" style="display: none;">Ajustar luces para tráfico de vehículo de emergencia </button>
+            <button id="aceptar-accion-emergencia" style="display: none;">Ajustar luces de la ruta para tráfico de vehículo de emergencia </button>
+            <!-- Botón para cancelar -->
+            <button id="cancelar-trafico" style="display: none;">Cancelar</button>
+        </div>
     </div>
 
     <!-- Div para la alerta, inicialmente oculta -->
@@ -91,6 +108,90 @@
                     document.getElementById('popup').style.display = 'block';
                 });
         });
+        // Añadimos un controlador de eventos de clic al botón para revisar las notificaciones del sistema de trafico
+        document.getElementById('revisar-notificacion-trafico').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/revisar_notificacion_trafico/'
+            fetch('/revisar_notificacion_trafico/', {method: 'POST'})
+                // Convertimos la respuesta a JSON
+                .then(response => response.json())
+                .then(data => {
+                    const aceptar = document.getElementById('aceptar-accion-trafico');
+                    const cancelar = document.getElementById('cancelar-trafico');
+                    document.getElementById('aceptar-accion-emergencia').style.display = 'none'; //Para evitar errores
+                    // Si se detecto una notificacion
+                    if (data.alerta == true) {
+                        // Mostramos un mensaje en el popup y preguntamos si se desea realizar la acción recomendada
+                        aceptar.style.display = 'block';
+                        cancelar.style.display = 'block';
+                        document.getElementById('popup-text-trafico').textContent = data.notificacion + '. ¿Desea realizar la acción recomendada?';
+                    } else {
+                        // Si no se detectó ningún dispositivo afectado por vehículo de emergencia, mostramos un mensaje en el popup
+                        aceptar.style.display = 'none';
+                        cancelar.style.display = 'none';
+                        document.getElementById('popup-text-trafico').textContent = data.notificacion;
+                    }
+                    // Mostramos el popup
+                    document.getElementById('popup-trafico').style.display = 'block';
+                });
+        });
+
+        // Añadimos un controlador de eventos de clic al botón para aceptar la acción recomendada
+        document.getElementById('aceptar-accion-trafico').addEventListener('click', function() {
+            // Obtenemos el texto del popup
+            var popupText = document.getElementById('popup-text-trafico').textContent;
+            // Hacemos una petición POST a la URL '/ajustar_trafico_vehiculos_emergencia/'
+            fetch('/ajustar_trafico_vehiculos_emergencia/', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    // Mostramos un mensaje con la respuesta del servidor
+                    alert(data.message);
+                    // Ocultamos el popup
+                    document.getElementById('popup-trafico').style.display = 'none';
+                });
+        });
+
+        // Añadimos un controlador de eventos de clic al botón para revisar las notificaciones del proveedor de servicios de emergencia
+        document.getElementById('revisar-notificacion-emergencia').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/revisar_notificacion_trafico/'
+            fetch('/revisar_notificacion_emergencia/', {method: 'POST'})
+                // Convertimos la respuesta a JSON
+                .then(response => response.json())
+                .then(data => {
+                    const aceptar = document.getElementById('aceptar-accion-emergencia');
+                    const cancelar = document.getElementById('cancelar-trafico');
+                    document.getElementById('aceptar-accion-trafico').style.display = 'none'; //Para evitar errores
+                    // Si se detecto una notificacion
+                    if (data.alerta == true) {
+                        // Mostramos un mensaje en el popup y preguntamos si se desea realizar la acción recomendada
+                        aceptar.style.display = 'block';
+                        cancelar.style.display = 'block';
+                        document.getElementById('popup-text-trafico').textContent = data.notificacion + '. ¿Desea realizar la acción recomendada?';
+                    } else {
+                        // Si no se detectó ningún dispositivo afectado por vehículo de emergencia, mostramos un mensaje en el popup
+                        aceptar.style.display = 'none';
+                        cancelar.style.display = 'none';
+                        document.getElementById('popup-text-trafico').textContent = data.notificacion;
+                    }
+                    // Mostramos el popup
+                    document.getElementById('popup-trafico').style.display = 'block';
+                });
+        });
+
+        // Añadimos un controlador de eventos de clic al botón para aceptar la acción recomendada
+        document.getElementById('aceptar-accion-emergencia').addEventListener('click', function() {
+            // Obtenemos el texto del popup
+            var popupText = document.getElementById('popup-text-trafico').textContent;
+            // Hacemos una petición POST a la URL '/ajustar_trafico_vehiculos_emergencia/'
+            fetch('/ajustar_trafico_vehiculos_emergencia/', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    // Mostramos un mensaje con la respuesta del servidor
+                    alert(data.message);
+                    // Ocultamos el popup
+                    document.getElementById('popup-trafico').style.display = 'none';
+                });
+        });
+
 
     // Añadimos un controlador de eventos de clic al botón para predecir el clima
         document.getElementById('predecir-clima').addEventListener('click', function() {
@@ -183,6 +284,11 @@
 
         // Añadimos un controlador de eventos de clic al botón de cancelar
         document.getElementById('cancelar').addEventListener('click', function() {
+            // Redirigimos al usuario a la página principal
+            window.location.href = '/'; 
+        });
+        // Añadimos un controlador de eventos de clic al botón de cancelar
+        document.getElementById('cancelar-trafico').addEventListener('click', function() {
             // Redirigimos al usuario a la página principal
             window.location.href = '/'; 
         });

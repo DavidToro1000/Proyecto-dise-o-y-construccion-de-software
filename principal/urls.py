@@ -1,7 +1,6 @@
 from django.urls import path
 from .views import mainPage, CustomLoginView, RegisterPage
 from django.contrib.auth.views import LogoutView
-from .views import revisar_sensor_proximidad
 from . import views
 
 urlpatterns = [
@@ -12,6 +11,9 @@ urlpatterns = [
     path('aceptar_accion_recomendada/', views.aceptar_accion_recomendada, name='aceptar_accion_recomendada'),
     path('predecir_clima/', views.predecir_clima, name='predecir_clima'),
     path('aceptar_accion_recomendada_clima/', views.aceptar_accion_recomendada_clima, name='aceptar_accion_recomendada_clima'),
-     path('asignar_estado_sensor_voltaje/', views.asignar_estado_sensor_voltaje, name='asignar_estado_sensor_voltaje'),
+    path('asignar_estado_sensor_voltaje/', views.asignar_estado_sensor_voltaje, name='asignar_estado_sensor_voltaje'),
+    path('revisar_notificacion_trafico/', views.revisar_notificacion_trafico, name='revisar_notificacion_trafico'),
+    path('revisar_notificacion_emergencia/', views.revisar_notificacion_emergencia, name='revisar_notificacion_emergencia'),
+    path('ajustar_trafico_vehiculos_emergencia/', views.ajustar_trafico_vehiculos_emergencia, name='ajustar_trafico_vehiculos_emergencia'),
     path('', mainPage.as_view(), name ='mainPage')
 ]
