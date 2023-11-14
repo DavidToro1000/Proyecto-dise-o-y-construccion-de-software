@@ -215,20 +215,3 @@ def revisar_notificacion_emergencia(request):
             return JsonResponse({"alerta": True, "notificacion": notificacion})
         else:
             return JsonResponse({"alerta": False, "notificacion": "No hay notificaciones del proveedor de servicios de emergencia."})
-        
-# Definimos la vista para ajustar las luces para trafico de vehiculos de emergencia
-@csrf_exempt
-def ajustar_trafico_vehiculos_emergencia(request):
-    # Si la petición es POST
-    if request.method == 'POST':
-        # Obtenemos los sectores donde los dispositivos de iluminación tienen el sensor de proximidad encendido
-        sectores = Sector.objects.filter(dispositivoiluminacion__estado_sensor_proximidad='encendido').distinct()
-        # Para cada sector
-        for sector in sectores:
-            # Obtenemos los dispositivos de iluminación de ese sector
-            dispositivos = sector.dispositivoiluminacion_set.all()
-            # Para cada dispositivo, establecemos la luminosidad a alta
-            for dispositivo in dispositivos:
-                dispositivo.establecer_luminosidad_alta()
-        # Devolvemos un mensaje de éxito en formato JSON
-        return JsonResponse({'message': 'Acción realizada con éxito.'})
