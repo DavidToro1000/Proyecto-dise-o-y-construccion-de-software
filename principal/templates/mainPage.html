@@ -18,43 +18,46 @@
 <body>
     <!-- Título de la página -->
     <h1>Opciones</h1>
-    <!-- Botón para revisar sensores de luz -->
-    <button id="revisar-sensor-luz">Revisar sensores de luz</button>
-    <!-- Botón para revisar el sensor de proximidad -->
-    <button id="revisar-sensor-proximidad">Revisar sensor de proximidad</button>
-    <!-- Botón para predecir el clima -->
-    <button id="predecir-clima">Predicción de clima</button>
-    <!-- Botón para asignar el estado del sensor de voltaje -->
-    <button id="asignar-estado-sensor-voltaje">Sensores de voltaje</button>
-    <!-- Botón para revisar notificaciones sistema de trafico -->
-    <button id="revisar-notificacion-trafico">Notificaciones sistema de tráfico</button>
-    <!-- Botón para revisar notificaciones sistema de mantenimiento vial -->
-    <button id="revisar-notificacion-vial">Notificaciones sistema de mantenimiento vial</button>
-    <!-- Botón para revisar sensores de proximidad en cruces -->
-    <button id="revisar-sensor-cruce">Revisar sensores de proximidad de vehiculo en cruce</button>
-    <!-- Botón para revisar notificaciones proveedor servicios de emergencia -->
-    <button id="revisar-notificacion-emergencia">Notificaciones del proveedor de servicios de emergencia</button>
+    <div class="grid-container">
+        <!-- Botón para revisar sensores de luz -->
+        <button class="grid-buttons" id="revisar-sensor-luz">Revisar sensores de luz</button>
+        <!-- Botón para revisar el sensor de proximidad -->
+        <button class="grid-buttons" id="revisar-sensor-proximidad">Revisar sensor de proximidad</button>
+        <!-- Botón para predecir el clima -->
+        <button class="grid-buttons" id="predecir-clima">Predicción de clima</button>
+        <!-- Botón para asignar el estado del sensor de voltaje -->
+        <button class="grid-buttons" id="asignar-estado-sensor-voltaje">Sensores de voltaje</button>
+        <!-- Botón para revisar notificaciones sistema de trafico -->
+        <button class="grid-buttons" id="revisar-notificacion-trafico">Notificaciones sistema de tráfico</button>
+        <!-- Botón para revisar notificaciones sistema de mantenimiento vial -->
+        <button class="grid-buttons" id="revisar-notificacion-vial">Notificaciones sistema de mantenimiento vial</button>
+        <!-- Botón para revisar sensores de proximidad en cruces -->
+        <button class="grid-buttons" id="revisar-sensor-cruce">Revisar sensores de proximidad de vehiculo en cruce</button>
+        <!-- Botón para revisar notificaciones proveedor servicios de emergencia -->
+        <button class="grid-buttons" id="revisar-notificacion-emergencia">Notificaciones del proveedor de servicios de emergencia</button>
+    </div>
 
     <!-- Div para el popup, inicialmente oculto -->
     <div id="popup" style="display: none;">
         <!-- Párrafo para el texto del popup -->
         <p id="popup-text"></p>
         <!-- Botón para aceptar la acción recomendada -->
-        <button id="aceptar-accion">Aceptar acción recomendada</button>
+        <button class="grid-buttons" id="aceptar-accion">Aceptar acción recomendada</button>
         <!-- Botón para cancelar -->
-        <button id="cancelar">Cancelar</button>
+        <button class="grid-buttons" id="cancelar">Cancelar</button>
     </div>
 
-     <!-- Div para el popup del caso de uso 4 y 8, inicialmente oculto -->
+     <!-- Div para el popup del caso de uso 4, 5 y 8, inicialmente oculto -->
      <div id="popup-trafico" style="display: none;">
         <!-- Párrafo para el texto del popup -->
         <p id="popup-text-trafico"></p>
         <!-- Div para el botón de Ajustar lucees, alineado al centro -->
         <div style="display: flex; justify-content: center;">
-            <button id="aceptar-accion-trafico" style="display: none;">Ajustar luces para tráfico de vehículo de emergencia </button>
-            <button id="aceptar-accion-emergencia" style="display: none;">Ajustar luces de la ruta para tráfico de vehículo de emergencia </button>
+            <button class="grid-buttons" id="aceptar-accion-trafico" style="display: none;">Ajustar luces para tráfico de vehículo de emergencia </button>
+            <button class="grid-buttons" id="aceptar-accion-emergencia" style="display: none;">Ajustar luces de la ruta para tráfico de vehículo de emergencia </button>
+            <button class="grid-buttons" id="aceptar-accion-vial" style="display: none;">Ajustar luces para señalar ruta alternativa </button>
             <!-- Botón para cancelar -->
-            <button id="cancelar-trafico" style="display: none;">Cancelar</button>
+            <button class="grid-buttons" id="cancelar-trafico" style="display: none;">Cancelar</button>
         </div>
     </div>
 
@@ -65,7 +68,7 @@
         <!-- Div para el botón de notificar, alineado al centro -->
         <div style="display: flex; justify-content: center;">
             <!-- Botón para notificar, inicialmente oculto -->
-            <button id="notificar" style="display: none;">Notificar</button>
+            <button class="grid-buttons" id="notificar" style="display: none;">Notificar</button>
         </div>
     </div>
 
@@ -109,6 +112,50 @@
                     } else {
                         // Si no se detectó ningún peatón o vehículo de emergencia, mostramos un mensaje en el popup
                         document.getElementById('popup-text').textContent = 'No se detectó ningún peatón o vehículo de emergencia.';
+                    }
+                    // Mostramos el popup
+                    document.getElementById('popup').style.display = 'block';
+                });
+        });
+        // Añadimos un controlador de eventos de clic al botón para revisar el sensor de cruce
+        document.getElementById('revisar-sensor-cruce').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/revisar_sensor_proximidad/'
+            fetch('/revisar_sensor_proximidad/', {method: 'POST'})
+            // Convertimos la respuesta a JSON
+                .then(response => response.json())
+                .then(data => {
+                    // Si hay sectores en los que se detectó un peatón o vehículo de emergencia
+                    if (data.sectores.length > 0) {
+                        // Mostramos un mensaje en el popup y preguntamos si se desea realizar la acción recomendada
+                        document.getElementById('popup-text').textContent = 'Se detectó vehículo en cruce en los sectores ' + data.sectores.join(', ') + '. ¿Desea realizar la acción recomendada?';
+                    } else {
+                        // Si no se detectó ningún vehículo en cruce, mostramos un mensaje en el popup
+                        document.getElementById('popup-text').textContent = 'No se detectó ningún vehículo en cruce.';
+                    }
+                    // Mostramos el popup
+                    document.getElementById('popup').style.display = 'block';
+                });
+        });
+         // Añadimos un controlador de eventos de clic al botón para revisar el sensor de luz
+        document.getElementById('revisar-sensor-luz').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/revisar_sensor_proximidad/'
+            fetch('/revisar_estado_luminosidad/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken') // Usamos la función getCookie para obtener el token CSRF
+                }
+            })
+                // Convertimos la respuesta a JSON
+                .then(response => response.json())
+                .then(data => {
+                    // Si hay sectores en los que se detectó un peatón o vehículo de emergencia
+                    if (data.sectores.length > 0) {
+                        // Mostramos un mensaje en el popup y preguntamos si se desea realizar la acción recomendada
+                        document.getElementById('popup-text').textContent = 'Se detectaron variaciones de luminosidad en los sectores ' + data.sectores.join(', ') + '. ¿Desea realizar la acción recomendada?';
+                    } else {
+                        // Si no se detectó ningún vehículo en cruce, mostramos un mensaje en el popup
+                        document.getElementById('popup-text').textContent = 'Niveles normales de luminosidad detectados.';
                     }
                     // Mostramos el popup
                     document.getElementById('popup').style.display = 'block';
@@ -198,6 +245,48 @@
                 });
         });
 
+        // Añadimos un controlador de eventos de clic al botón para revisar las notificaciones del sistema de mantenimiento vial
+        document.getElementById('revisar-notificacion-vial').addEventListener('click', function() {
+            // Hacemos una petición POST a la URL '/revisar_notificacion_vial/'
+            fetch('/revisar_notificacion_vial/', {method: 'POST'})
+                // Convertimos la respuesta a JSON
+                .then(response => response.json())
+                .then(data => {
+                    const aceptar = document.getElementById('aceptar-accion-vial');
+                    const cancelar = document.getElementById('cancelar-trafico');
+                    document.getElementById('aceptar-accion-trafico').style.display = 'none'; //Para evitar errores
+                    document.getElementById('aceptar-accion-emergencia').style.display = 'none'; //Para evitar errores
+                    // Si se detecto una notificacion
+                    if (data.alerta == true) {
+                        // Mostramos un mensaje en el popup y preguntamos si se desea realizar la acción recomendada
+                        aceptar.style.display = 'block';
+                        cancelar.style.display = 'block';
+                        document.getElementById('popup-text-trafico').textContent = data.notificacion + '. ¿Desea realizar la acción recomendada?';
+                    } else {
+                        // Si no se detectó ningún dispositivo afectado por vehículo de emergencia, mostramos un mensaje en el popup
+                        aceptar.style.display = 'none';
+                        cancelar.style.display = 'none';
+                        document.getElementById('popup-text-trafico').textContent = data.notificacion;
+                    }
+                    // Mostramos el popup
+                    document.getElementById('popup-trafico').style.display = 'block';
+                });
+        });
+
+        // Añadimos un controlador de eventos de clic al botón para aceptar la acción recomendada
+        document.getElementById('aceptar-accion-vial').addEventListener('click', function() {
+            // Obtenemos el texto del popup
+            var popupText = document.getElementById('popup-text-trafico').textContent;
+            // Hacemos una petición POST a la URL '/ajustar_via_alterna/'
+            fetch('/ajustar_via_alterna/', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    // Mostramos un mensaje con la respuesta del servidor
+                    alert(data.message);
+                    // Ocultamos el popup
+                    document.getElementById('popup-trafico').style.display = 'none';
+                });
+        });
 
     // Añadimos un controlador de eventos de clic al botón para predecir el clima
         document.getElementById('predecir-clima').addEventListener('click', function() {
@@ -240,6 +329,15 @@
                     },
                     body: 'clima=' + encodeURIComponent(clima) + '&sector=' + encodeURIComponent(sector)
                 })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostramos un mensaje con la respuesta del servidor
+                        alert(data.message);
+                        // Ocultamos el popup
+                        document.getElementById('popup').style.display = 'none';
+                    });
+            } else if (popupText.includes('luminosidad')) {
+                fetch('/aceptar_accion_recomendada_luminosidad/', {method: 'POST'})
                     .then(response => response.json())
                     .then(data => {
                         // Mostramos un mensaje con la respuesta del servidor

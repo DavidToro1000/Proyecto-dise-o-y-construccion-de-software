@@ -10,9 +10,10 @@ from django.contrib.auth import login
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import DispositivoIluminacion, Sector, SistemaTrafico, ProveedorServiciosDeEmergencia
+from .models import DispositivoIluminacion, Sector, SistemaTrafico, ProveedorServiciosDeEmergencia, SistemaMantenimientoVial
 from django.views.decorators.csrf import csrf_exempt
 import random
+from django.db.models import Q
 
 #Creacion del sistema de tráfico
 sistemaTrafico = SistemaTrafico()
@@ -215,3 +216,77 @@ def revisar_notificacion_emergencia(request):
             return JsonResponse({"alerta": True, "notificacion": notificacion})
         else:
             return JsonResponse({"alerta": False, "notificacion": "No hay notificaciones del proveedor de servicios de emergencia."})
+        
+# Funcion para asignar luminosidad a dispositivos
+def revisar_estado_luminosidad(request):
+    # Obtenemos todos los dispositivos de iluminación
+    dispositivos = DispositivoIluminacion.objects.all()
+    # Para cada dispositivo, generamos un estado de sensor de voltaje aleatorio
+    for dispositivo in dispositivos:
+        dispositivo.generar_luminosidad_aleatorio()
+    # Obtenemos los sectores donde los dispositivos de iluminación tienen niveles anormales de luminosidad
+    sectores = Sector.objects.filter(Q(dispositivoiluminacion__luminosidad='baja') | Q(dispositivoiluminacion__luminosidad='alta')).distinct()
+    # Obtenemos los nombres de estos sectores
+    sectores_nombres = [sector.nombre for sector in sectores]
+    # Devolvemos los nombres de los sectores en formato JSON
+    return JsonResponse({'sectores': sectores_nombres})
+
+# Definimos la vista para aceptar la acción recomendada para luminosidad
+@csrf_exempt
+def aceptar_accion_recomendada_luminosidad(request):
+    # Si la petición es POST
+    if request.method == 'POST':
+        # Obtenemos los sectores donde los dispositivos de iluminación tienen niveles anormales de luminosidad
+        sectores = Sector.objects.filter(Q(dispositivoiluminacion__luminosidad='baja') | Q(dispositivoiluminacion__luminosidad='alta')).distinct()
+        # Para cada sector
+        for sector in sectores:
+            # Obtenemos los dispositivos de iluminación de ese sector
+            dispositivos = sector.dispositivoiluminacion_set.all()
+            # Para cada dispositivo, establecemos la luminosidad a alta
+            for dispositivo in dispositivos:
+                dispositivo.establecer_luminosidad_normal()
+        # Devolvemos un mensaje de éxito en formato JSON
+        return JsonResponse({'message': 'Acción realizada con éxito.'})
+    
+# Funcion para verificar si existe alguna notificacion del sistema de trafico
+@csrf_exempt
+def revisar_notificacion_vial(request):
+    # Si la petición es POST
+    if request.method == 'POST':
+        # Para simular la notificacion se introduce un random de modo que el 30% de las veces si exista una notificacion
+        if random.random() <=0.3:
+            # Obtenemos todos los dispositivos de iluminación
+            dispositivos = DispositivoIluminacion.objects.all()
+            # Para cada dispositivo, generamos un estado de sensor de proximidad aleatorio
+            for dispositivo in dispositivos:
+                dispositivo.generar_estado_sensor_proximidad_aleatorio()
+
+            # Obtenemos los sectores donde los dispositivos de iluminación tienen el sensor de proximidad encendido
+            sectores = Sector.objects.filter(dispositivoiluminacion__estado_sensor_proximidad='encendido').distinct()
+            # Obtenemos los nombres de estos sectores
+            sectores_nombres = [sector.nombre for sector in sectores]
+            #Traemos el sistema de trafico para llamar el metodo notificar
+            sistema_vial = SistemaMantenimientoVial.objects.all()
+            sistema_vial = sistema_vial[0] #solo debe haber un sistema de trafico
+            notificacion = sistema_vial.notificarCierre(sectores_nombres)
+            # Devolvemos los nombres de los sectores en formato JSON
+            return JsonResponse({"alerta": True, "notificacion": notificacion})
+        else:
+            return JsonResponse({"alerta": False, "notificacion": "No hay notificaciones del sistema de mantenimiento vial."})
+
+# Definimos la vista para ajustar las luces para trafico de vehiculos de emergencia
+@csrf_exempt
+def ajustar_via_alterna(request):
+    # Si la petición es POST
+    if request.method == 'POST':
+        # Obtenemos los sectores donde los dispositivos de iluminación tienen el sensor de proximidad encendido
+        sectores = Sector.objects.filter(dispositivoiluminacion__estado_sensor_proximidad='encendido').distinct()
+        # Para cada sector
+        for sector in sectores:
+            # Obtenemos los dispositivos de iluminación de ese sector
+            dispositivos = sector.dispositivoiluminacion_set.all()
+            # Para cada dispositivo, establecemos la luminosidad a alta
+            for dispositivo in dispositivos:
+                dispositivo.establecer_luminosidad_alta()
+        # Devolvemos un mensaje de éxito en formato JSON
+        return JsonResponse({'message': 'Acción realizada con éxito.'})

@@ -26,6 +26,7 @@ class DispositivoIluminacion(models.Model):
     # Definimos las posibles opciones para la luminosidad de un dispositivo de iluminación
     LUMINOSIDAD_CHOICES = [
         ('baja', 'Baja'),
+        ('normal', 'Normal'),
         ('alta', 'Alta'),
     ]
 
@@ -64,9 +65,20 @@ class DispositivoIluminacion(models.Model):
         self.estado_sensor_proximidad = random.choice(self.ESTADO_CHOICES)[0]
         self.save()
 
+    # Método para generar un estado de luminosidad aleatorio
+    def generar_luminosidad_aleatorio(self):
+        luminosidad = random.choice(self.LUMINOSIDAD_CHOICES)[0]
+        self.luminosidad = luminosidad
+        self.save()
+
     # Método para establecer la luminosidad a 'alta'
     def establecer_luminosidad_alta(self):
         self.luminosidad = 'alta'
+        self.save()
+
+    # Método para establecer la luminosidad a 'normal'
+    def establecer_luminosidad_normal(self):
+        self.luminosidad = 'normal'
         self.save()
 
     # Método para establecer la luminosidad a 'baja'
@@ -105,6 +117,18 @@ class ProveedorServiciosDeEmergencia(models.Model):
     #Funcion de notificacion
     def notificarVehiculo(self, sectores):
         return f"En este momento hay un vehiculo de emergencia realizando una ruta que afecta los sectores: {', '.join(sectores)}"
+    
+    # Método para convertir un objeto Sector a string
+    def __str__(self):
+        return self.contacto
+    
+class SistemaMantenimientoVial(models.Model):
+    # El contacto del sistema de tráfico
+    contacto = models.CharField(max_length=50, primary_key=True)
+
+    #Funcion de notificacion
+    def notificarCierre(self, sectores):
+        return f"En este momento hay obras viales que afecta los sectores: {', '.join(sectores)}"
     
     # Método para convertir un objeto Sector a string
     def __str__(self):
