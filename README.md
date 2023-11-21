@@ -1,3 +1,7 @@
 # Proyecto-diseno-y-construccion-de-software
 
-Link del despliegue: https://proyecto1231000.pythonanywhere.com/
+Integrantes:
+
+Juan Pablo Rivera Sierra
+Jeronimo Gomez Restrepo
+David Esteban Toro Arango
